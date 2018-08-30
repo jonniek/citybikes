@@ -49,6 +49,7 @@
     computed: {
       filteredStations() {
         return this.stations
+          .sort((a, b) => a.name > b.name ? 1 : -1)
           .filter(s => s.name.toLowerCase().includes(this.search.toLowerCase()))
       }
     },
