@@ -1,0 +1,28 @@
+{ 
+  "tyontekijat": [
+    {
+      "firstName":"Mauno",
+      "lastName":"Ahonen",
+      "workPhone": "040 5995591 123",
+      "homePhone": null
+    },
+    {
+      "firstName":"Matti",
+      "lastName":"Näsä",
+      "workPhone": "040 55331 123",
+      "homePhone": "08 181203 121"
+    },
+    {
+      "firstName":"Raimo",
+      "lastName":"Vormisto",
+      "workPhone": null,
+      "homePhone": null
+    },
+    {
+      "firstName":"Timo",
+      "lastName":"Silakka",
+      "workPhone": "040 5991 123",
+      "homePhone": "08123081203 1"
+    }
+  ]
+}
