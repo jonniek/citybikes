@@ -53,7 +53,7 @@
       }
     },
     mounted: function() {
-      fetch("http://api.digitransit.fi/routing/v1/routers/hsl/bike_rental")
+      fetch("https://api.digitransit.fi/routing/v1/routers/hsl/bike_rental")
         .then(res => res.json())
         .then(response => { 
           this.stations = response.stations
