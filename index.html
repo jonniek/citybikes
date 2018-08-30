@@ -1,0 +1,66 @@
+<!DOCTYPE HTML5>
+<head>
+  <meta charset="utf-8">
+  <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
+  <style>
+    body {
+      background-color: #fefefe;
+      color: #333;
+      font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif;
+      padding-top: 50px;
+      padding-bottom: 50px;
+      min-height: 101vh;
+    }
+    #app {
+      max-width: 500px;
+      margin: auto;
+    }
+    hr { border-top: none; border: 3px solid #ddd; }
+    .loading { margin: 10px 0; }
+    ul { list-style: none; padding: 0; }
+    li { margin: 5px 0; }
+    .error { color: red; }
+  </style>
+</head>
+<body>
+  <div id="app">
+    <h1>Kaupunkipyörä asemat</h1>
+    <hr>
+    <div v-if="error !== ''" class="error">{{ error }}</div>
+    <div v-if="loading">Asemia ladataan...</div>
+    <div v-else>
+      <input type="text" v-model="search" name="filter" placeholder="hae">
+      <ul id="example-1">
+        <li v-for="station in filteredStations">
+          <span :class="{ error: station.bikesAvailable === 0 }">{{ station.name }} - {{ station.bikesAvailable }}</span>
+        </li>
+      </ul>
+    </div>
+  </div>
+  <script>
+  var app = new Vue({
+    el: '#app',
+    data: {
+      stations: [],
+      error: "",
+      search: "",
+      loading: true,
+    },
+    computed: {
+      filteredStations() {
+        return this.stations
+          .filter(s => s.name.toLowerCase().includes(this.search.toLowerCase()))
+      }
+    },
+    mounted: function() {
+      fetch("http://api.digitransit.fi/routing/v1/routers/hsl/bike_rental")
+        .then(res => res.json())
+        .then(response => { 
+          this.stations = response.stations
+          this.loading = false
+        })
+        .catch(e => this.error = e.message)
+    }
+  })
+  </script>
+</body>
