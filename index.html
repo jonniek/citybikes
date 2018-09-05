@@ -2,6 +2,7 @@
 <head>
   <meta charset="utf-8">
   <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
   <style>
     body {
       background-color: #fefefe;
@@ -11,8 +12,11 @@
       padding-bottom: 50px;
       min-height: 101vh;
     }
+    .closest{padding: 20px 0;}
+    label { font-weight: bold; display: block; padding-bottom: 5px; }
     #app {
-      max-width: 500px;
+      width: 500px;
+      max-width: 100%;
       margin: auto;
     }
     hr { border-top: none; border: 3px solid #ddd; }
@@ -29,6 +33,10 @@
     <div v-if="error !== ''" class="error">{{ error }}</div>
     <div v-if="loading">Asemia ladataan...</div>
     <div v-else>
+      <div v-if="closestStation !== null" class="closest">
+        <label>Lähin asema:</label>
+        <span :class="{ error: closestStation.bikesAvailable === 0 }">{{ closestStation.name }} - {{ closestStation.bikesAvailable }}</span>
+      </div>
       <input type="text" v-model="search" name="filter" placeholder="hae">
       <ul id="example-1">
         <li v-for="station in filteredStations">
@@ -45,13 +53,47 @@
       error: "",
       search: "",
       loading: true,
+      currentLocationX: null,
+      currentLocationY: null,
+      closestStation: null,
+    },
+    methods: {
+      getClosestStation(_x, _y, stations) {
+        const pythagorans = (dx, dy) => Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2))
+        let closestDistance = Number.MAX_SAFE_INTEGER
+        let closestStation = null
+        this.stations.forEach(station => {
+          const { x, y } = station
+          const dx = Math.abs(x - _x)
+          const dy = Math.abs(y - _y)
+          console.log(x, y, dx, dy)
+          const distance = Math.sqrt(Math.pow(dx, 2) + Math.pow(dy, 2))
+          console.log(distance)
+          if (distance < closestDistance) {
+            closestDistance = distance
+            closestStation = station
+          }
+        })
+        return closestStation
+      },
+      setClosestStation() {
+        navigator.geolocation.getCurrentPosition((location) => {
+          const x = location.coords.latitude
+          const y = location.coords.longitude
+          console.log(location.coords.latitude);
+          console.log(location.coords.longitude);
+          const closestStation = this.getClosestStation(y, x)
+          this.closestStation = closestStation
+          console.log(closestStation)
+        })
+      }
     },
     computed: {
       filteredStations() {
         return this.stations
           .sort((a, b) => a.name > b.name ? 1 : -1)
           .filter(s => s.name.toLowerCase().includes(this.search.toLowerCase()))
-      }
+      },
     },
     mounted: function() {
       fetch("https://api.digitransit.fi/routing/v1/routers/hsl/bike_rental")
@@ -59,8 +101,11 @@
         .then(response => { 
           this.stations = response.stations
           this.loading = false
+          this.setClosestStation()
         })
         .catch(e => this.error = e.message)
+
+      
     }
   })
   </script>
