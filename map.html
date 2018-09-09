@@ -4,6 +4,7 @@
   <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
   <script src="http://www.openlayers.org/api/OpenLayers.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <style type="text/css" src="base.mss"></style>
   <style>
     body {
       background-color: #fefefe;
@@ -35,44 +36,10 @@
   </style>
 </head>
 <body>
-  <script>
-    map = new OpenLayers.Map("mapdiv");
-    map.addLayer(new OpenLayers.Layer.OSM());
-
-    var lonLat = new OpenLayers.LonLat( -0.1279688 ,51.5077286 )
-          .transform(
-            new OpenLayers.Projection("EPSG:4326"), // transform from WGS 1984
-            map.getProjectionObject() // to Spherical Mercator Projection
-          );
-          
-    var zoom=16;
-
-    var markers = new OpenLayers.Layer.Markers( "Markers" );
-    map.addLayer(markers);
-    
-    markers.addMarker(new OpenLayers.Marker(lonLat));
-    
-    map.setCenter(lonLat, zoom);
-  </script>
   <div id="mapdiv"></div>
   <div id="app">
-    <h1>Kaupunkipyörä asemat</h1>
-    <hr>
     <div v-if="error !== ''" class="error">{{ error }}</div>
-    <div v-if="loading">Asemia ladataan...</div>
-    <div v-else>
-      <div v-if="closestStation !== null" class="closest">
-        <label>Lähin asema:</label>
-        <span :class="{ error: closestStation.bikesAvailable === 0 }">{{ closestStation.name }} - {{ closestStation.bikesAvailable }}</span>
-      </div>
-      <input type="text" v-model="search" name="filter" placeholder="hae">
-      <ul id="example-1">
-        <li v-for="station in filteredStations">
-          <span :class="{ error: station.bikesAvailable === 0 }">{{ station.name }} - {{ station.bikesAvailable }}</span>
-        </li>
-      </ul>
-    </div>
-  </div>
+    <div v-if="loading">Asemia ladataan...</div>  </div>
   <script>
   var app = new Vue({
     el: '#app',
@@ -84,6 +51,7 @@
       currentLocationX: null,
       currentLocationY: null,
       closestStation: null,
+      map: null
     },
     methods: {
       getClosestStation(_x, _y, stations) {
@@ -113,6 +81,35 @@
           const closestStation = this.getClosestStation(y, x)
           this.closestStation = closestStation
           console.log(closestStation)
+
+          const lonLat = new OpenLayers.LonLat(y, x)
+            .transform(
+              new OpenLayers.Projection("EPSG:4326"), // transform from WGS 1984
+              this.map.getProjectionObject() // to Spherical Mercator Projection
+            );
+          this.map.setCenter(lonLat, 12);
+          
+        })
+      },
+      setMarkers() {
+        const markers = new OpenLayers.Layer.Markers("Markers");
+        this.map.addLayer(markers);
+
+        this.stations.forEach(station => {
+          const lonLat = new OpenLayers.LonLat(station.x, station.y)
+          .transform(
+            new OpenLayers.Projection("EPSG:4326"), // transform from WGS 1984
+            this.map.getProjectionObject() // to Spherical Mercator Projection
+          );
+          const marker = new OpenLayers.Marker(lonLat)
+          
+
+          marker.events.register("mousedown", null, test => {
+            console.log(station)
+            alert("Vapaita pyöriä: " + station.bikesAvailable)
+          });
+
+          markers.addMarker(marker);
         })
       }
     },
@@ -124,12 +121,20 @@
       },
     },
     mounted: function() {
+      this.map = new OpenLayers.Map("mapdiv")
+      this.map.addLayer(new OpenLayers.Layer.OSM())
+      this.map.setCenter(new OpenLayers.LonLat(24.938162914,60.169832654).transform(
+            new OpenLayers.Projection("EPSG:4326"), // transform from WGS 1984
+            this.map.getProjectionObject() // to Spherical Mercator Projection
+          ), 16);
+
       fetch("https://api.digitransit.fi/routing/v1/routers/hsl/bike_rental")
         .then(res => res.json())
         .then(response => { 
           this.stations = response.stations
           this.loading = false
           this.setClosestStation()
+          this.setMarkers()
         })
         .catch(e => this.error = e.message)
 
