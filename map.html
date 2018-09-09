@@ -2,9 +2,8 @@
 <head>
   <meta charset="utf-8">
   <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
-  <script src="http://www.openlayers.org/api/OpenLayers.js"></script>
+  <script src="https://www.openlayers.org/api/OpenLayers.js"></script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <style type="text/css" src="base.mss"></style>
   <style>
     body {
       background-color: #fefefe;
@@ -87,7 +86,7 @@
               new OpenLayers.Projection("EPSG:4326"), // transform from WGS 1984
               this.map.getProjectionObject() // to Spherical Mercator Projection
             );
-          this.map.setCenter(lonLat, 12);
+          this.map.setCenter(lonLat, 15);
           
         })
       },
@@ -126,7 +125,7 @@
       this.map.setCenter(new OpenLayers.LonLat(24.938162914,60.169832654).transform(
             new OpenLayers.Projection("EPSG:4326"), // transform from WGS 1984
             this.map.getProjectionObject() // to Spherical Mercator Projection
-          ), 16);
+          ), 15);
 
       fetch("https://api.digitransit.fi/routing/v1/routers/hsl/bike_rental")
         .then(res => res.json())
